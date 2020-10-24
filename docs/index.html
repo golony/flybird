@@ -1,7 +1,422 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head></head>
-<body>
-<h1>hello world</h1>
-</body>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+
+		<style type="text/css">
+			* {
+				margin: 0;
+				padding: 0;
+			}
+
+
+			@media screen and (max-width:378px) {
+
+				html {
+					font-size: calc(100vw/6.4);
+				}
+
+				.main {
+					position: absolute;
+
+					top: 0;
+					bottom: 0;
+					right: 0;
+					left: 0;
+					background-color: bisque;
+				}
+			}
+
+			@media screen and (min-width:378px) {
+
+				html {
+					font-size: 100px;
+				}
+
+				.main {
+					width: 378px;
+					height: 537px;
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					right: 0;
+					left: 0;
+					margin: auto;
+					background-color: bisque;
+				}
+			}
+
+			canvas {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				margin: auto;
+				border: 1px solid red;
+				width: 100%;
+				height: calc(5.37rem*100vw/3.78rem);
+				box-sizing: border-box;
+
+			}
+		</style>
+	</head>
+	<body>
+
+		<div class="main">
+			<canvas id="mycanvas" width="378" height="537">
+
+			</canvas>
+		</div>
+
+
+
+		<script type="text/javascript">
+			
+			class Rect{
+				constructor(x,y,width,height) {
+				    this.x=x;
+					this.y=y;
+					this.width=width;
+					this.height=height
+				}
+				
+				collide_rect(rect_obj){
+					
+					var a= this.x< rect_obj.x+rect_obj.width;
+					var b= rect_obj.x<this.x+this.width;
+					var c= this.y<rect_obj.y+rect_obj.height;
+					var d= rect_obj.y<this.y+this.height;
+					
+					if(a&&b&&c&&d){
+						return true;
+					}
+					else{
+						return false;
+					}
+					
+					
+				}
+			}
+			
+			
+			
+			class GameBg {
+				constructor(img_path, speed, ctx) {
+					this.img1 = new Image();
+					this.img1.src = img_path;
+
+					this.img2 = new Image();
+					this.img2.src = img_path;
+
+
+					this.speed = speed;
+					this.ctx = ctx;
+
+					this.bg1_x = 0;
+					this.bg2_x = 378;
+
+
+				}
+
+				show() {
+
+					this.bg1_x -= this.speed;
+					this.bg2_x -= this.speed;
+
+
+
+					if (this.bg1_x <= -378) {
+						this.bg1_x = this.bg2_x + 378;
+					}
+					if (this.bg2_x <= -378) {
+						this.bg2_x = this.bg1_x + 378;
+					}
+
+					this.ctx.drawImage(this.img1, this.bg1_x, 0)
+					this.ctx.drawImage(this.img2, this.bg2_x, 0)
+
+
+
+
+				}
+
+
+			}
+
+			var Pipe_arr = [];
+			var createPipe_count = 0;
+			class Pipe {
+
+				constructor(img_path, speed, ctx) {
+
+					this.img1 = new Image();
+					this.img1.src = img_path;
+
+					this.img2 = new Image();
+					this.img2.src = img_path;
+
+
+					this.x = 380;
+					this.y = parseInt(Math.random() * 351 + 50) * -1;
+					
+					
+					
+					
+					this.rect1=new Rect(this.x,this.y,this.img1.width,this.img1.height)
+					this.rect2=new Rect(this.x,this.y+550,this.img1.width,this.img1.height)
+					
+
+					this.speed = speed;
+					this.ctx = ctx;
+
+
+					Pipe_arr.push(this);
+
+				
+				
+					this.addPoint=false;
+					
+					
+					
+
+				}
+
+				show() {
+
+					this.x -= this.speed;
+					
+					this.rect1.x=this.x;
+					this.rect2.x=this.x;
+					
+					
+					
+					if(this.x<=-500){
+						Pipe_arr.splice(0,1)
+					}
+					
+					if(this.x<=90 && this.addPoint==false){
+						this.addPoint=true;
+						point.play();
+					}
+
+
+					this.ctx.drawImage(this.img1, this.x, this.y)
+
+					this.ctx.drawImage(this.img2, this.x, this.y + 550)
+
+
+				}
+
+				static createPipe() {
+
+					createPipe_count++;
+					if (createPipe_count == 200) {
+						new Pipe('image/pipe.png', 1, ctx);
+						createPipe_count = 0;
+					}
+
+
+
+					for (var i of Pipe_arr) {
+						i.show()
+					}
+
+
+				}
+
+			}
+			
+			class Hero{
+				constructor(img_path, speed, ctx,x,y){
+					
+					this.img=new Image();
+					this.img.src=img_path;
+					
+					this.speed=speed;
+					
+					this.ctx=ctx;
+					
+					this.x=x;
+					this.y=y;
+					
+					
+					this.maxSpeed=speed+10;
+					
+					this.minSpeed=speed-10;
+					
+					
+					this.img_index=0;
+					
+					this.count=0;
+					
+					
+					this.rect= new Rect(this.x+10,this.y+20,50,20);
+					
+					this.state=true;
+
+				}
+				
+				
+				show(){
+					
+					
+						
+						if(this.speed<this.maxSpeed){
+							this.speed+=0.1;
+						}
+						
+						
+						this.y+=this.speed;
+						
+						this.rect.y=this.y+20;
+						
+						this.count++;
+						if(this.count==5){
+							this.count=0;
+							this.img_index++;
+							if(this.img_index==3){
+								this.img_index=0;
+							}
+							
+						}
+						
+					
+					
+
+					
+					if(this.y>=480){
+						this.y=480;
+						// console.log('落地了-游戏结束！')
+						this.state=false;
+					}
+						
+					this.ctx.drawImage(this.img,80*this.img_index,0,80,60,this.x,this.y,80,60)
+	
+				}				
+			}
+			
+			
+			// 碰撞检测
+			// 英雄碰撞 管道数组
+			function collide(hero,pipeArr){
+				
+				
+				
+				for(var i of pipeArr){
+					var temp =  (hero.rect.collide_rect(i.rect1) || hero.rect.collide_rect(i.rect2))
+					if(temp){
+						
+						clearInterval(interval);
+						die.play();
+						isPlay=false;
+						return temp;
+						
+						
+					}
+				}
+				return false;
+				
+				
+				
+				
+			}
+			
+		
+			
+
+			window.onload = Init;
+
+
+			// 初始化脚本
+			var mycanvas = document.getElementById('mycanvas');
+			var ctx = mycanvas.getContext('2d');
+			
+			var interval;// 计时器
+			
+			var isPlay=false;
+			
+			var swing= new Audio();
+			swing.src='sound/sfx_wing.ogg';
+			
+			var point=new Audio();
+			point.src='sound/sfx_point.ogg';
+			
+			var die=new Audio();
+			die.src='sound/sfx_die.ogg';
+			
+			
+			
+			function Init() {
+
+				//游戏背景对象
+				var gameBg_obj = new GameBg('image/bg.jpg', 1, ctx);
+
+				//主角对象
+				var hero_obj = new Hero('image/bird.png',1,ctx,100,200);
+				
+								
+				
+				// 鼠标点击
+				mycanvas.onclick=function(){
+					
+					if(isPlay){
+						hero_obj.speed=-3;
+						swing.play();
+					}
+					else{
+						
+						
+						isPlay=true;
+						
+					}
+					
+					
+					
+					
+				}
+				
+				
+				
+
+				function mainLoop() {
+					//清除屏幕
+					ctx.clearRect(0, 0, 500, 600)
+					
+					//显示背景
+					gameBg_obj.show()
+
+					// 创建管道
+					Pipe.createPipe()
+					
+					
+					//显示主角
+					hero_obj.show()
+					
+
+					
+					//碰撞检测
+					var x =collide(hero_obj,Pipe_arr);
+					console.log("collide",x)
+					
+					
+					
+
+					// // 回调循环
+					// animationFrame=window.requestAnimationFrame(mainLoop)
+				}
+
+
+				interval= setInterval(mainLoop,1000/60);
+				
+				
+
+				// animationFrame=window.requestAnimationFrame(mainLoop)
+
+			}
+		</script>
+
+
+
+	</body>
 </html>
